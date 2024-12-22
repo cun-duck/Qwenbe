@@ -63,7 +63,7 @@ if user_input:
     response_text = ""
     for chunk in stream:
         response_text += chunk.choices[0].delta.content
-        st.experimental_rerun()  # Memperbarui tampilan dengan respons baru
+        st.rerun()  # Memperbarui tampilan dengan respons baru
     
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
