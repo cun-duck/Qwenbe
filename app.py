@@ -62,10 +62,10 @@ if user_input:
     )
 
     # Menampilkan output streaming dari model
-    for chunk in stream:
+    for idx, chunk in enumerate(stream):
         response_text += chunk.choices[0].delta.content
-        # Menambahkan key unik untuk setiap respons, agar tidak ada duplikat
-        st.text_area("Model Response", value=response_text, height=300, key=f"response_{len(st.session_state.history)}")
+        # Menggunakan key unik berdasarkan idx respons model
+        st.text_area("Model Response", value=response_text, height=300, key=f"response_{len(st.session_state.history)}_{idx}")
 
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
