@@ -14,6 +14,10 @@ st.markdown(
         .stTextInput>div>div>input { color: white; background-color: #333333; }
         .stCode { background-color: #333333; color: white; }
         .stText { color: white; }
+        .user-message { background-color: #4CAF50; color: white; padding: 10px; border-radius: 15px; margin: 5px 0; max-width: 70%; }
+        .model-message { background-color: #333333; color: white; padding: 10px; border-radius: 15px; margin: 5px 0; max-width: 70%; align-self: flex-start; }
+        .chat-container { display: flex; flex-direction: column; }
+        .stTextInput { border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -31,16 +35,16 @@ if "history" not in st.session_state:
 def add_message(role, content):
     st.session_state.history.append({"role": role, "content": content})
 
+# Kontainer chat untuk menampilkan pesan
+chat_container = st.container()
+
 # Menampilkan riwayat percakapan
-for idx, msg in enumerate(st.session_state.history):
-    if msg["role"] == "user":
-        st.markdown(f'**User:** {msg["content"]}')
-    else:
-        # Jika output adalah kode, tampilkan dalam format kode
-        if msg["content"].startswith("```") and msg["content"].endswith("```"):
-            st.code(msg["content"][3:-3], language="python")  # Menampilkan kode Python
+with chat_container:
+    for msg in st.session_state.history:
+        if msg["role"] == "user":
+            st.markdown(f'<div class="user-message">{msg["content"]}</div>', unsafe_allow_html=True)
         else:
-            st.markdown(f'**Model:** {msg["content"]}')
+            st.markdown(f'<div class="model-message">{msg["content"]}</div>', unsafe_allow_html=True)
 
 # Masukkan pesan baru dari pengguna
 user_input = st.text_input("You:", "", key="input")
@@ -48,14 +52,14 @@ user_input = st.text_input("You:", "", key="input")
 if user_input:
     # Menambahkan input pengguna ke riwayat percakapan
     add_message("user", user_input)
-    
+
     # Kirim permintaan ke API untuk mendapatkan respons model
     messages = [{"role": "user", "content": user_input}] + [{"role": "system", "content": msg["content"]} for msg in st.session_state.history]
-    
+
     # Kirim permintaan ke API Hugging Face untuk model
     response_text = ""
     stream = client.chat.completions.create(
-        model="Qwen/QwQ-32B-Preview",
+        model="Qwen/Qwen2.5-Coder-32B-Instruct",
         messages=messages,
         max_tokens=500,
         stream=True
@@ -65,14 +69,9 @@ if user_input:
     for chunk in stream:
         response_text += chunk.choices[0].delta.content
 
-    # Menampilkan seluruh respons dalam satu widget
-    st.text_area("Model Response", value=response_text, height=300, key="response")
-
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
 
-    # Tampilkan output model
-    if response_text.startswith("```") and response_text.endswith("```"):
-        st.code(response_text[3:-3], language="python")  # Menampilkan kode Python
-    else:
-        st.markdown(f'**Model:** {response_text}')
+    # Tampilkan respons model dalam chat container
+    with chat_container:
+        st.markdown(f'<div class="model-message">{response_text}</div>', unsafe_allow_html=True)
