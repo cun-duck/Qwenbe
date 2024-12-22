@@ -52,6 +52,8 @@ if user_input:
     # Kirim permintaan ke API untuk mendapatkan respons model
     messages = [{"role": "user", "content": user_input}] + [{"role": "system", "content": msg["content"]} for msg in st.session_state.history]
     
+    # Kirim permintaan ke API Hugging Face untuk model
+    response_text = ""
     stream = client.chat.completions.create(
         model="Qwen/QwQ-32B-Preview",
         messages=messages,
@@ -60,10 +62,10 @@ if user_input:
     )
 
     # Menampilkan output streaming dari model
-    response_text = ""
     for chunk in stream:
         response_text += chunk.choices[0].delta.content
-    
+        st.text_area("Model Response", value=response_text, height=300)
+
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
 
@@ -72,6 +74,3 @@ if user_input:
         st.code(response_text[3:-3], language="python")  # Menampilkan kode Python
     else:
         st.markdown(f'**Model:** {response_text}')
-    
-    # Refresh tampilan setelah seluruh respons diterima
-    st.rerun()
