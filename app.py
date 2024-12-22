@@ -63,7 +63,6 @@ if user_input:
     response_text = ""
     for chunk in stream:
         response_text += chunk.choices[0].delta.content
-        st.rerun()  # Memperbarui tampilan dengan respons baru
     
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
@@ -73,3 +72,6 @@ if user_input:
         st.code(response_text[3:-3], language="python")  # Menampilkan kode Python
     else:
         st.markdown(f'**Model:** {response_text}')
+    
+    # Refresh tampilan setelah seluruh respons diterima
+    st.rerun()
