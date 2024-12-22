@@ -32,7 +32,7 @@ def add_message(role, content):
     st.session_state.history.append({"role": role, "content": content})
 
 # Menampilkan riwayat percakapan
-for msg in st.session_state.history:
+for idx, msg in enumerate(st.session_state.history):
     if msg["role"] == "user":
         st.markdown(f'**User:** {msg["content"]}')
     else:
@@ -64,7 +64,8 @@ if user_input:
     # Menampilkan output streaming dari model
     for chunk in stream:
         response_text += chunk.choices[0].delta.content
-        st.text_area("Model Response", value=response_text, height=300)
+        # Menambahkan key unik untuk setiap respons, agar tidak ada duplikat
+        st.text_area("Model Response", value=response_text, height=300, key=f"response_{len(st.session_state.history)}")
 
     # Menambahkan respons model ke riwayat percakapan
     add_message("model", response_text)
